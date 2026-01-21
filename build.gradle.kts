@@ -8,7 +8,7 @@ plugins {
 
 group = "org.zhdev.bukman"
 val dependencyDir = "net.frankheijden.serverutils.dependencies"
-version = "3.5.6"
+version = "3.5.7"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
