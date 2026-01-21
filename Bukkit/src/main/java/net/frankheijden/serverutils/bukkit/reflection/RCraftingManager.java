@@ -15,9 +15,16 @@ import org.bukkit.plugin.Plugin;
 public class RCraftingManager {
 
     private static final MinecraftReflection reflection;
+    private static final MinecraftReflection recipeMapReflection;
     private static final Method getCraftingManagerMethod;
 
     static {
+        if (MinecraftReflectionVersion.MINOR >= 21) {
+            recipeMapReflection = MinecraftReflection.of("net.minecraft.world.item.crafting.RecipeMap");
+        } else {
+            recipeMapReflection = null;
+        }
+
         if (MinecraftReflectionVersion.MINOR >= 17) {
             reflection = MinecraftReflection.of("net.minecraft.world.item.crafting.CraftingManager");
         } else if (MinecraftReflectionVersion.MINOR >= 12) {
@@ -57,24 +64,30 @@ public class RCraftingManager {
                 throw new MinecraftReflectionException(ex);
             }
 
-            Map recipes;
-            if (MinecraftReflectionVersion.MINOR >= 17) {
-                recipes = reflection.get(craftingManager, "c");
-            } else {
-                recipes = reflection.get(craftingManager, "recipes");
-            }
-
             Predicate<Object> predicate = RMinecraftKey.matchingPluginPredicate(new AtomicBoolean(false), plugin);
-            if (MinecraftReflectionVersion.MINOR == 13) {
-                MapUtils.removeKeys(recipes, predicate);
+            if (MinecraftReflectionVersion.MINOR >= 21) {
+                Object recipeMap = reflection.get(craftingManager, "e");
+                Map byKey = recipeMapReflection.get(recipeMap, "c");
+                MapUtils.removeKeys(byKey, predicate);
             } else {
-                Collection<Map> list = (Collection<Map>) recipes.values();
-                list.forEach(map -> MapUtils.removeKeys(map, predicate));
-            }
+                Map recipes;
+                if (MinecraftReflectionVersion.MINOR >= 17) {
+                    recipes = reflection.get(craftingManager, "c");
+                } else {
+                    recipes = reflection.get(craftingManager, "recipes");
+                }
 
-            if (MinecraftReflectionVersion.MINOR >= 18) {
-                Map byName = reflection.get(craftingManager, "d");
-                MapUtils.removeKeys(byName, predicate);
+                if (MinecraftReflectionVersion.MINOR == 13) {
+                    MapUtils.removeKeys(recipes, predicate);
+                } else {
+                    Collection<Map> list = (Collection<Map>) recipes.values();
+                    list.forEach(map -> MapUtils.removeKeys(map, predicate));
+                }
+
+                if (MinecraftReflectionVersion.MINOR >= 18) {
+                    Map byName = reflection.get(craftingManager, "d");
+                    MapUtils.removeKeys(byName, predicate);
+                }
             }
         }
     }

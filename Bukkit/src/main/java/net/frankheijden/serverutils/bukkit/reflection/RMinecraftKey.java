@@ -10,12 +10,19 @@ import org.bukkit.plugin.Plugin;
 public class RMinecraftKey {
 
     private static final MinecraftReflection reflection;
+    private static final MinecraftReflection resourceKeyReflection;
 
     static {
         if (MinecraftReflectionVersion.MINOR >= 17) {
             reflection = MinecraftReflection.of("net.minecraft.resources.MinecraftKey");
         } else {
             reflection = MinecraftReflection.of("net.minecraft.server.%s.MinecraftKey");
+        }
+
+        if (MinecraftReflectionVersion.MINOR >= 21) {
+            resourceKeyReflection = MinecraftReflection.of("net.minecraft.resources.ResourceKey");
+        } else {
+            resourceKeyReflection = null;
         }
     }
 
@@ -31,7 +38,9 @@ public class RMinecraftKey {
      * @return The namespace.
      */
     public static String getNameSpace(Object instance) {
-        if (MinecraftReflectionVersion.MINOR <= 13) {
+        if (MinecraftReflectionVersion.MINOR >= 21) {
+            return reflection.invoke(instance, "b");
+        } else if (MinecraftReflectionVersion.MINOR <= 13) {
             return reflection.get(instance, "a");
         } else if (MinecraftReflectionVersion.MINOR == 17) {
             return reflection.invoke(instance, "getNamespace");
@@ -54,6 +63,9 @@ public class RMinecraftKey {
      */
     public static Predicate<Object> matchingPluginPredicate(AtomicBoolean errorThrown, Plugin plugin) {
         return o -> {
+            if (MinecraftReflectionVersion.MINOR >= 21) {
+                o = resourceKeyReflection.invoke(o, "a");
+            }
             try {
                 return RMinecraftKey.isFrom(o, plugin);
             } catch (IllegalAccessException ex) {
