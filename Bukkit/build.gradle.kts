@@ -42,5 +42,5 @@ bukkit {
     apiVersion = "1.13"
     website = "https://git.zhira.net/zhdev/bukman"
     softDepend = listOf("ServerUtilsUpdater")
-    authors = listOf("FrankHeijden", "ZhDev")
+    authors = listOf("FrankHeijden", "rozhur")
 }
