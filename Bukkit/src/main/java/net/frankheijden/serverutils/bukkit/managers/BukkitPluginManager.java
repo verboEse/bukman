@@ -1,5 +1,6 @@
 package net.frankheijden.serverutils.bukkit.managers;
 
+import dev.frankheijden.minecraftreflection.MinecraftReflectionVersion;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -258,6 +259,9 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin, BukkitPlu
     }
 
     private static void unregisterCommands(Map<String, ? extends Command> commands) {
+        if (!MinecraftReflectionVersion.isSupported()) {
+            return;
+        }
         commands.values().forEach(c -> {
             if (c instanceof PluginCommand) {
                 PluginCommand pluginCommand = (PluginCommand) c;
@@ -280,6 +284,9 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin, BukkitPlu
      */
     @Deprecated
     public static void unregisterCommands(Collection<? extends PluginCommand> pluginCommands) {
+        if (!MinecraftReflectionVersion.isSupported()) {
+            return;
+        }
         Map<String, Command> knownCommands = getKnownCommands();
         if (knownCommands == null) return;
 
@@ -311,6 +318,9 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin, BukkitPlu
      * Unregisters all the specified commands.
      */
     public static void unregisterCommands(String... commands) {
+        if (!MinecraftReflectionVersion.isSupported()) {
+            return;
+        }
         Map<String, Command> map;
         try {
             map = RCommandMap.getKnownCommands(RCraftServer.getCommandMap());
@@ -335,6 +345,9 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin, BukkitPlu
      * @param commands The commands to unregister.
      */
     public static void unregisterExactCommands(Collection<? extends Command> commands) {
+        if (!MinecraftReflectionVersion.isSupported()) {
+            return;
+        }
         Map<String, Command> knownCommands = getKnownCommands();
         if (knownCommands == null) return;
         knownCommands.values().removeAll(commands);
