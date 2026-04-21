@@ -3,6 +3,7 @@ package net.frankheijden.serverutils.bukkit.entities;
 import cloud.commandframework.bukkit.CloudBukkitCapabilities;
 import cloud.commandframework.execution.CommandExecutionCoordinator;
 import cloud.commandframework.paper.PaperCommandManager;
+import dev.frankheijden.minecraftreflection.MinecraftReflectionVersion;
 import java.io.File;
 import java.util.Arrays;
 import java.util.logging.Logger;
@@ -126,16 +127,22 @@ public class BukkitPlugin extends ServerUtilsPlugin<Plugin, BukkitTask, BukkitAu
     @Override
     protected void reloadPlugin() {
         this.messagesResource.load(Arrays.asList(BukkitMessageKey.values()));
-        if (getConfigResource().getConfig().getBoolean("settings.disable-plugins-command")) {
-            if (registeredPluginsCommand) {
-                BukkitPluginManager.unregisterCommands("pl", "plugins");
-                plugin.restoreBukkitPluginCommand();
-                this.registeredPluginsCommand = false;
-            }
+        if (!MinecraftReflectionVersion.isSupported()) {
+            getLogger().warning(
+                    "Skipping reflection-based plugin command rewiring because server version is unsupported."
+            );
         } else {
-            BukkitPluginManager.unregisterCommands("pl", "plugins");
-            new BukkitCommandPlugins(this).register(commandManager);
-            this.registeredPluginsCommand = true;
+            if (getConfigResource().getConfig().getBoolean("settings.disable-plugins-command")) {
+                if (registeredPluginsCommand) {
+                    BukkitPluginManager.unregisterCommands("pl", "plugins");
+                    plugin.restoreBukkitPluginCommand();
+                    this.registeredPluginsCommand = false;
+                }
+            } else {
+                BukkitPluginManager.unregisterCommands("pl", "plugins");
+                new BukkitCommandPlugins(this).register(commandManager);
+                this.registeredPluginsCommand = true;
+            }
         }
         new BukkitCommandServerUtils(this).register(commandManager);
 

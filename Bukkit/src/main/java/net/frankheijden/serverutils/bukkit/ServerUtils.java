@@ -1,5 +1,6 @@
 package net.frankheijden.serverutils.bukkit;
 
+import dev.frankheijden.minecraftreflection.MinecraftReflectionVersion;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -46,13 +47,23 @@ public class ServerUtils extends JavaPlugin {
     @Override
     public void onDisable() {
         super.onDisable();
-        restoreBukkitPluginCommand();
-        RCraftServer.syncCommands(Collections.emptySet());
+        if (MinecraftReflectionVersion.isSupported()) {
+            restoreBukkitPluginCommand();
+            RCraftServer.syncCommands(Collections.emptySet());
+        } else {
+            getLogger().warning("Skipping reflection-based command restore because server version is unsupported.");
+        }
         plugin.disable();
     }
 
+    /**
+     * Restores the default Bukkit plugins command.
+     */
     @SuppressWarnings("removal")
     public void restoreBukkitPluginCommand() {
+        if (!MinecraftReflectionVersion.isSupported()) {
+            return;
+        }
         RCraftServer.getCommandMap().register("bukkit", new PluginsCommand("plugins"));
     }
 
