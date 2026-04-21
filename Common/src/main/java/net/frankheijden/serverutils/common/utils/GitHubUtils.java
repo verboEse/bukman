@@ -7,7 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
@@ -44,9 +44,13 @@ public class GitHubUtils {
      * Opens a stream to a github url and returns the response.
      */
     public static GitHubResponse stream(String url) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
-        conn.setRequestProperty("User-Agent", USER_AGENT);
-        conn.setConnectTimeout(10000);
-        return GitHubResponse.from(conn);
+        try {
+            HttpURLConnection conn = (HttpURLConnection) URI.create(url).toURL().openConnection();
+            conn.setRequestProperty("User-Agent", USER_AGENT);
+            conn.setConnectTimeout(10000);
+            return GitHubResponse.from(conn);
+        } catch (IllegalArgumentException ex) {
+            throw new IOException("Invalid URL: " + url, ex);
+        }
     }
 }

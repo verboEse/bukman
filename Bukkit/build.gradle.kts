@@ -1,4 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.gradle.api.attributes.java.TargetJvmVersion
 
 plugins {
     id("net.minecrell.plugin-yml.bukkit") version "0.5.0"
@@ -12,8 +13,19 @@ base {
     archivesName.set("${rootProject.name}-Bukkit")
 }
 
+java {
+    sourceCompatibility = JavaVersion.toVersion("25")
+    targetCompatibility = JavaVersion.toVersion("25")
+}
+
+configurations.configureEach {
+    if (isCanBeResolved) {
+        attributes.attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 25)
+    }
+}
+
 dependencies {
-    implementation("org.zhdev.oblak:cloud-paper:${VersionConstants.cloudVersion}")
+    implementation("cloud.commandframework:cloud-paper:${VersionConstants.cloudVersion}")
     implementation("net.kyori:adventure-api:${VersionConstants.adventureVersion}") {
         exclude("net.kyori", "adventure-text-minimessage")
     }
@@ -26,9 +38,7 @@ dependencies {
     }
     implementation("org.bstats:bstats-bukkit:${VersionConstants.bstatsVersion}")
     implementation(project(":Common"))
-    compileOnly("com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT") {
-        exclude("net.kyori", "*")
-    }
+    compileOnly("io.papermc.paper:paper-api:26.1.2.build.19-alpha")
 }
 
 tasks.withType<ShadowJar> {
@@ -39,7 +49,7 @@ bukkit {
     name = "Bukman"
     main = "net.frankheijden.serverutils.bukkit.ServerUtils"
     description = "A server utility"
-    apiVersion = "1.13"
+    apiVersion = "1.21"
     website = "https://git.zhira.net/zhdev/bukman"
     softDepend = listOf("ServerUtilsUpdater")
     authors = listOf("FrankHeijden", "rozhur")

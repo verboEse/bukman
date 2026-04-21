@@ -1,13 +1,46 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
-plugins {
-    id("net.kyori.blossom") version "1.3.0"
-}
-
 group = rootProject.group
 version = "${rootProject.version}"
 base {
     archivesName.set("${rootProject.name}-Common")
+}
+
+val generateBuildConfig by tasks.registering {
+    val outputDir = layout.buildDirectory.dir("generated/sources/buildConfig/main/java")
+    val projectVersion = rootProject.version.toString()
+    val outputFile = outputDir.map { it.dir("net/frankheijden/serverutils/common").file("BuildConfig.java") }
+    inputs.property("version", projectVersion)
+    outputs.file(outputFile)
+    doLast {
+        val pkg = "net.frankheijden.serverutils.common"
+        val dir = outputDir.get().dir(pkg.replace('.', '/'))
+        dir.asFile.mkdirs()
+        dir.file("BuildConfig.java").asFile.writeText(
+            """package $pkg;
+
+/** Auto-generated build configuration - do not edit manually. */
+public final class BuildConfig {
+
+    public static final String VERSION = "$projectVersion";
+
+    private BuildConfig() {}
+}
+"""
+        )
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir(layout.buildDirectory.dir("generated/sources/buildConfig/main/java"))
+        }
+    }
+}
+
+tasks.compileJava {
+    dependsOn(generateBuildConfig)
 }
 
 repositories {
@@ -23,12 +56,6 @@ dependencies {
     compileOnly("com.github.FrankHeijden:ServerUtilsUpdater:5f722b10d1")
 
     testImplementation("net.kyori:adventure-text-serializer-plain:${VersionConstants.adventureVersion}")
-}
-
-tasks {
-    blossom {
-        replaceToken("{version}", version, "src/main/java/net/frankheijden/serverutils/common/ServerUtilsApp.java")
-    }
 }
 
 tasks.withType<ShadowJar> {

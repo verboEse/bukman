@@ -165,6 +165,7 @@ public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, P
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     protected KeyValueComponentBuilder createPluginInfo(
             KeyValueComponentBuilder builder,
             Function<Consumer<ListComponentBuilder<String>>, Component> listBuilderFunction,
@@ -197,6 +198,7 @@ public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, P
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     protected KeyValueComponentBuilder createCommandInfo(
             KeyValueComponentBuilder builder,
             Function<Consumer<ListComponentBuilder<String>>, Component> listBuilderFunction,

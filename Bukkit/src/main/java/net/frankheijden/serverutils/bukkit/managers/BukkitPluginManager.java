@@ -143,6 +143,7 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin, BukkitPlu
     }
 
     @Override
+    @SuppressWarnings({"deprecation", "removal"})
     public CloseablePluginResults<Plugin> unloadOrderedPlugins(List<Plugin> plugins) {
         CloseablePluginResults<Plugin> unloadResults = new CloseablePluginResults<>();
 
@@ -406,6 +407,7 @@ public class BukkitPluginManager extends AbstractPluginManager<Plugin, BukkitPlu
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public BukkitPluginDescription getLoadedPluginDescription(Plugin plugin) {
         return new BukkitPluginDescription(plugin.getDescription(), getPluginFile(plugin));
     }

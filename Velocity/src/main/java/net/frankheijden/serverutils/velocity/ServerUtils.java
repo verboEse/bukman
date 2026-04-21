@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 @Plugin(
         id = "bukman",
         name = "Bukman",
-        version = "{version}",
+        version = BuildConfig.VERSION,
         description = "A server utility",
         url = "https://git.zhira.net/zhdev/bukman",
         authors = {"FrankHeijden", "ZhDev"}

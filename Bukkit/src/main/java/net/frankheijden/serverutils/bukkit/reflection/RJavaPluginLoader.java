@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.bukkit.plugin.java.JavaPluginLoader;
 
+@SuppressWarnings("removal")
 public class RJavaPluginLoader {
 
     private RJavaPluginLoader() {}

@@ -3,7 +3,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
     `java-library`
     `maven-publish`
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("com.gradleup.shadow") version "9.4.1"
 }
 
 group = "org.zhdev.bukman"
@@ -11,19 +11,25 @@ val dependencyDir = "net.frankheijden.serverutils.dependencies"
 version = "3.5.7"
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.toVersion("25")
+    targetCompatibility = JavaVersion.toVersion("25")
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(25))
+    }
 }
 
 subprojects {
     apply(plugin = "java")
     apply(plugin = "maven-publish")
     apply(plugin = "checkstyle")
-    apply(plugin = "com.github.johnrengelman.shadow")
+    apply(plugin = "com.gradleup.shadow")
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.toVersion("25")
+        targetCompatibility = JavaVersion.toVersion("25")
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(25))
+        }
     }
 
     repositories {
@@ -37,17 +43,18 @@ subprojects {
     }
 
     dependencies {
-        implementation("org.zhdev.oblak:cloud-core:${VersionConstants.cloudVersion}")
-        implementation("org.zhdev.oblak:cloud-brigadier:${VersionConstants.cloudVersion}")
-        implementation("org.zhdev:megareflection:1.0.2-SNAPSHOT")
+        implementation("cloud.commandframework:cloud-core:${VersionConstants.cloudVersion}")
+        implementation("cloud.commandframework:cloud-brigadier:${VersionConstants.cloudVersion}")
+        implementation("com.github.FrankHeijden:MinecraftReflection:1.0.1")
         implementation("com.google.code.gson:gson:2.8.6")
         implementation("me.lucko:commodore:2.2")
         compileOnly("com.mojang:brigadier:1.0.18")
 
-        testImplementation("org.assertj:assertj-core:3.18.1")
-        testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
-        testImplementation("org.junit.jupiter:junit-jupiter-params:5.7.0")
-        testImplementation("org.junit.jupiter:junit-jupiter-engine:5.7.0")
+        testImplementation("org.assertj:assertj-core:3.27.3")
+        testImplementation("org.junit.jupiter:junit-jupiter-api:5.12.2")
+        testImplementation("org.junit.jupiter:junit-jupiter-params:5.12.2")
+        testImplementation("org.junit.jupiter:junit-jupiter-engine:5.12.2")
+        testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.12.2")
     }
 
     tasks {
