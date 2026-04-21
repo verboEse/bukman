@@ -12,7 +12,7 @@ jobs:
       MAVEN_PASSWORD: ${{ secrets.FVDH_TOKEN }}
     strategy:
       matrix:
-        java-version: [ 8 ]
+        java-version: [ 25 ]
       fail-fast: true
     steps:
       - uses: actions/checkout@v4
