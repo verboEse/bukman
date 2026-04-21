@@ -17,7 +17,7 @@ public class RJavaPlugin {
     }
 
     public static File getFile(Object instance) {
-        return reflection.invoke(instance, "getFile");
+        return reflection.get(instance, "file");
     }
 
     /**
