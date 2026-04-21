@@ -1,6 +1,7 @@
 .idea/
 .vs/
 .gradle/
+.vscode/
 build/
 jars/
 *.class
