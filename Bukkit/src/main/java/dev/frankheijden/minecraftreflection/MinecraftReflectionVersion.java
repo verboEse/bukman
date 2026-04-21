@@ -73,11 +73,15 @@ public class MinecraftReflectionVersion {
         NMS = extractNmsToken(packageName);
 
         if (!SUPPORTED) {
-            Bukkit.getLogger().warning("[Bukman] Unable to resolve Minecraft server version metadata. "
-                    + "Reflection-dependent features will be disabled. "
-                    + "reason='" + resolved.message + "', source=" + DETECTION_SOURCE + ", package='" + packageName + "', "
-                    + "minecraftVersion='" + minecraftVersion + "', bukkitVersion='" + bukkitVersion + "', "
-                    + "serverVersion='" + serverVersion + "'.");
+            Bukkit.getLogger().warning(
+                    "[Bukman] Unable to resolve Minecraft server version metadata."
+                    + " Reflection-dependent features will be disabled."
+                    + " reason='" + resolved.message + "',"
+                    + " source=" + DETECTION_SOURCE + ","
+                    + " package='" + packageName + "',"
+                    + " minecraftVersion='" + minecraftVersion + "',"
+                    + " bukkitVersion='" + bukkitVersion + "',"
+                    + " serverVersion='" + serverVersion + "'.");
         }
     }
 
