@@ -16,8 +16,7 @@ import org.bukkit.entity.Player;
 
 public class RCraftServer {
 
-    private static final MinecraftReflection reflection = MinecraftReflection
-            .of("org.bukkit.craftbukkit.%s.CraftServer");
+    private static final MinecraftReflection reflection = MinecraftReflection.of(Bukkit.getServer().getClass());
 
     public static MinecraftReflection getReflection() {
         return reflection;
