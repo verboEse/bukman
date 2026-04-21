@@ -6,3 +6,4 @@ build/
 jars/
 *.class
 *.jar
+AGENTS.md
