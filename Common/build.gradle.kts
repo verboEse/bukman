@@ -9,7 +9,9 @@ base {
 val generateBuildConfig by tasks.registering {
     val outputDir = layout.buildDirectory.dir("generated/sources/buildConfig/main/java")
     val projectVersion = rootProject.version.toString()
-    outputs.dir(outputDir)
+    val outputFile = outputDir.map { it.dir("net/frankheijden/serverutils/common").file("BuildConfig.java") }
+    inputs.property("version", projectVersion)
+    outputs.file(outputFile)
     doLast {
         val pkg = "net.frankheijden.serverutils.common"
         val dir = outputDir.get().dir(pkg.replace('.', '/'))
