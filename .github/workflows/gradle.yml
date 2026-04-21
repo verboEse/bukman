@@ -15,21 +15,22 @@ jobs:
         java-version: [ 8 ]
       fail-fast: true
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup JDK ${{ matrix.java-version }}
-      uses: actions/setup-java@v4
-      with:
-        distribution: temurin
-        java-version: ${{ matrix.java-version }}
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-    - name: Build
-      run: ./gradlew clean build --stacktrace
-    - name: Upload artififacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: Bukman
-        path: jars/*.jar
-    - name: Publish
-      if: github.event_name == 'push' && env.MAVEN_USERNAME != '' && env.MAVEN_PASSWORD != ''
-      run: ./gradlew publish --stacktrace
+      - uses: actions/checkout@v4
+      - name: Setup JDK ${{ matrix.java-version }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java-version }}
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Build
+        run: ./gradlew clean build --stacktrace
+      - name: Upload artififacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Bukman
+          path: jars/*.jar
+      - name: Publish
+        if: github.event_name == 'push' && env.MAVEN_USERNAME != '' &&
+          env.MAVEN_PASSWORD != ''
+        run: ./gradlew publish --stacktrace
