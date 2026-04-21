@@ -14,7 +14,7 @@ import net.frankheijden.serverutils.common.tasks.UpdateCheckerTask;
 public class ServerUtilsApp<U extends ServerUtilsPlugin<P, T, C, S, D>, P, T, C extends ServerUtilsAudience<S>, S, D extends ServerUtilsPluginDescription> {
 
     public static final int BSTATS_METRICS_ID = 7790;
-    public static final String VERSION = "3.5.7";
+    public static final String VERSION = BuildConfig.VERSION;
 
     private final Object platformPlugin;
     private final U plugin;
