@@ -16,14 +16,34 @@ import org.bukkit.entity.Player;
 
 public class RCraftServer {
 
-    private static final MinecraftReflection reflection = MinecraftReflection.of(Bukkit.getServer().getClass());
+    private static volatile MinecraftReflection reflection;
 
+    /**
+     * Returns the CraftServer reflection helper, initializing it on first use.
+     */
     public static MinecraftReflection getReflection() {
-        return reflection;
+        MinecraftReflection cached = reflection;
+        if (cached != null) {
+            return cached;
+        }
+
+        synchronized (RCraftServer.class) {
+            cached = reflection;
+            if (cached == null) {
+                Object server = Bukkit.getServer();
+                if (server == null) {
+                    throw new IllegalStateException("Bukkit server is not available yet");
+                }
+                cached = MinecraftReflection.of(server.getClass());
+                reflection = cached;
+            }
+        }
+
+        return cached;
     }
 
     public static File getConfigFile() {
-        return reflection.invoke(Bukkit.getServer(), "getConfigFile");
+        return getReflection().invoke(Bukkit.getServer(), "getConfigFile");
     }
 
     /**
@@ -32,16 +52,16 @@ public class RCraftServer {
      * @return The associated file.
      */
     public static File getOptionsFile(String option) {
-        Object options = reflection.get(getConsole(), "options");
-        return reflection.invoke(options, "valueOf", option);
+        Object options = getReflection().get(getConsole(), "options");
+        return getReflection().invoke(options, "valueOf", option);
     }
 
     public static File getCommandsConfigFile() {
-        return reflection.invoke(Bukkit.getServer(), "getCommandsConfigFile");
+        return getReflection().invoke(Bukkit.getServer(), "getCommandsConfigFile");
     }
 
     public static SimpleCommandMap getCommandMap() {
-        return reflection.get(Bukkit.getServer(), "commandMap");
+        return getReflection().get(Bukkit.getServer(), "commandMap");
     }
 
     /**
@@ -52,7 +72,7 @@ public class RCraftServer {
         if (MinecraftReflectionVersion.MINOR < 13) return;
 
         Collection children = new ArrayList<>(RCommandDispatcher.getDispatcher().getRoot().getChildren());
-        reflection.invoke(Bukkit.getServer(), "syncCommands");
+        getReflection().invoke(Bukkit.getServer(), "syncCommands");
         Object root = RCommandDispatcher.getDispatcher().getRoot();
 
         for (Object child : children) {
@@ -80,7 +100,7 @@ public class RCraftServer {
     }
 
     public static Object getConsole() {
-        return reflection.get(Bukkit.getServer(), "console");
+        return getReflection().get(Bukkit.getServer(), "console");
     }
 
     /**
@@ -88,32 +108,32 @@ public class RCraftServer {
      */
     public static void reloadBukkitConfiguration() {
         YamlConfiguration bukkit = YamlConfiguration.loadConfiguration(getConfigFile());
-        reflection.set(Bukkit.getServer(), "configuration", bukkit);
+        getReflection().set(Bukkit.getServer(), "configuration", bukkit);
 
         RDedicatedServer.reload(getConsole());
 
-        reflection.set(Bukkit.getServer(), "monsterSpawn", bukkit.getInt("spawn-limits.monsters"));
-        reflection.set(Bukkit.getServer(), "animalSpawn", bukkit.getInt("spawn-limits.animals"));
-        reflection.set(Bukkit.getServer(), "waterAnimalSpawn", bukkit.getInt("spawn-limits.water-animals"));
-        reflection.set(Bukkit.getServer(), "ambientSpawn", bukkit.getInt("spawn-limits.ambient"));
-        reflection.set(Bukkit.getServer(), "warningState",
+        getReflection().set(Bukkit.getServer(), "monsterSpawn", bukkit.getInt("spawn-limits.monsters"));
+        getReflection().set(Bukkit.getServer(), "animalSpawn", bukkit.getInt("spawn-limits.animals"));
+        getReflection().set(Bukkit.getServer(), "waterAnimalSpawn", bukkit.getInt("spawn-limits.water-animals"));
+        getReflection().set(Bukkit.getServer(), "ambientSpawn", bukkit.getInt("spawn-limits.ambient"));
+        getReflection().set(Bukkit.getServer(), "warningState",
                 Warning.WarningState.value(bukkit.getString("settings.deprecated-verbose")));
         if (MinecraftReflectionVersion.isMin(14))
-            reflection.set(Bukkit.getServer(), "minimumAPI", bukkit.getString("settings.minimum-api"));
-        reflection.set(Bukkit.getServer(), "printSaveWarning", false);
-        reflection.set(Bukkit.getServer(), "monsterSpawn", bukkit.getInt("spawn-limits.monsters"));
-        reflection.set(Bukkit.getServer(), "monsterSpawn", bukkit.getInt("spawn-limits.monsters"));
-        reflection.set(Bukkit.getServer(), "monsterSpawn", bukkit.getInt("spawn-limits.monsters"));
+            getReflection().set(Bukkit.getServer(), "minimumAPI", bukkit.getString("settings.minimum-api"));
+        getReflection().set(Bukkit.getServer(), "printSaveWarning", false);
+        getReflection().set(Bukkit.getServer(), "monsterSpawn", bukkit.getInt("spawn-limits.monsters"));
+        getReflection().set(Bukkit.getServer(), "monsterSpawn", bukkit.getInt("spawn-limits.monsters"));
+        getReflection().set(Bukkit.getServer(), "monsterSpawn", bukkit.getInt("spawn-limits.monsters"));
         if (MinecraftReflectionVersion.isMax(12)) {
-            reflection.set(Bukkit.getServer(), "chunkGCPeriod", bukkit.getInt("chunk-gc.period-in-ticks"));
-            reflection.set(Bukkit.getServer(), "chunkGCLoadThresh", bukkit.getInt("chunk-gc.load-threshold"));
+            getReflection().set(Bukkit.getServer(), "chunkGCPeriod", bukkit.getInt("chunk-gc.period-in-ticks"));
+            getReflection().set(Bukkit.getServer(), "chunkGCLoadThresh", bukkit.getInt("chunk-gc.load-threshold"));
         }
 
         RDedicatedServer.getReflection().set(getConsole(), "autosavePeriod", bukkit.getInt("ticks-per.autosave"));
     }
 
     public static void loadIcon() {
-        reflection.invoke(Bukkit.getServer(), "loadIcon");
+        getReflection().invoke(Bukkit.getServer(), "loadIcon");
     }
 
     /**
@@ -133,15 +153,15 @@ public class RCraftServer {
         }
 
         YamlConfiguration commands = YamlConfiguration.loadConfiguration(getCommandsConfigFile());
-        reflection.set(Bukkit.getServer(), "commandsConfiguration", commands);
-        reflection.set(Bukkit.getServer(), "overrideAllCommandBlockCommands",
+        getReflection().set(Bukkit.getServer(), "commandsConfiguration", commands);
+        getReflection().set(Bukkit.getServer(), "overrideAllCommandBlockCommands",
                 commands.getStringList("command-block-overrides").contains("*"));
-        if (MinecraftReflectionVersion.isMin(13)) reflection.set(
+        if (MinecraftReflectionVersion.isMin(13)) getReflection().set(
                 Bukkit.getServer(),
                 "ignoreVanillaPermissions",
                 commands.getBoolean("ignore-vanilla-permissions")
         );
-        if (MinecraftReflectionVersion.is(12)) reflection.set(
+        if (MinecraftReflectionVersion.is(12)) getReflection().set(
                 Bukkit.getServer(),
                 "unrestrictedAdvancements",
                 commands.getBoolean("unrestricted-advancements")
@@ -155,7 +175,7 @@ public class RCraftServer {
      * Reloads the ip-bans file.
      */
     public static void reloadIpBans() {
-        Object playerList = reflection.get(Bukkit.getServer(), "playerList");
+        Object playerList = getReflection().get(Bukkit.getServer(), "playerList");
         Object jsonList = RPlayerList.getReflection().invoke(playerList, "getIPBans");
         RJsonList.load(jsonList);
     }
@@ -164,7 +184,7 @@ public class RCraftServer {
      * Reloads the profile bans file.
      */
     public static void reloadProfileBans() {
-        Object playerList = reflection.get(Bukkit.getServer(), "playerList");
+        Object playerList = getReflection().get(Bukkit.getServer(), "playerList");
         Object jsonList = RPlayerList.getReflection().invoke(playerList, "getProfileBans");
         RJsonList.load(jsonList);
     }
