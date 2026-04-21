@@ -24,12 +24,12 @@ public class ReflectionUtils {
     private ReflectionUtils() {}
 
     /**
-     * Performs a privileged action while accessing {@link Unsafe}.
+     * Performs an action while accessing {@link Unsafe}.
      */
     @SuppressWarnings("removal")
-    public static void doPrivilegedWithUnsafe(Consumer<Unsafe> privilegedAction) {
+    public static void doWithUnsafe(Consumer<Unsafe> action) {
         try {
-            privilegedAction.accept((Unsafe) theUnsafeFieldMethodHandle.invoke());
+            action.accept((Unsafe) theUnsafeFieldMethodHandle.invoke());
         } catch (Throwable th) {
             th.printStackTrace();
         }
