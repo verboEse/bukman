@@ -33,7 +33,7 @@ public final class BuildConfig {
 sourceSets {
     main {
         java {
-            srcDir(generateBuildConfig.map { it.outputs.files.singleFile })
+            srcDir(layout.buildDirectory.dir("generated/sources/buildConfig/main/java"))
         }
     }
 }
