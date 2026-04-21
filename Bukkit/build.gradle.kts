@@ -26,14 +26,14 @@ configurations.configureEach {
 
 dependencies {
     implementation("cloud.commandframework:cloud-paper:${VersionConstants.cloudVersion}")
-    implementation("net.kyori:adventure-api:${VersionConstants.adventureVersion}") {
+    compileOnly("net.kyori:adventure-api:${VersionConstants.adventureVersion}") {
         exclude("net.kyori", "adventure-text-minimessage")
     }
-    implementation("net.kyori:adventure-platform-bukkit:${VersionConstants.adventurePlatformVersion}") {
+    compileOnly("net.kyori:adventure-platform-bukkit:${VersionConstants.adventurePlatformVersion}") {
         exclude("net.kyori", "adventure-api")
         exclude("net.kyori", "adventure-text-minimessage")
     }
-    implementation("net.kyori:adventure-text-minimessage:${VersionConstants.adventureMinimessageVersion}") {
+    compileOnly("net.kyori:adventure-text-minimessage:${VersionConstants.adventureMinimessageVersion}") {
         exclude("net.kyori", "adventure-api")
     }
     implementation("org.bstats:bstats-bukkit:${VersionConstants.bstatsVersion}")
@@ -43,6 +43,11 @@ dependencies {
 
 tasks.withType<ShadowJar> {
     relocate("org.bstats", "${dependencyDir}.bstats")
+    // Exclude Adventure classes that come in transitively (e.g. via cloud-paper).
+    // Paper bundles all Adventure libraries natively; shading them causes classloader
+    // class-identity mismatches that silently prevent messages from reaching players.
+    exclude("net/kyori/adventure/**")
+    exclude("net/kyori/examination/**")
 }
 
 bukkit {
