@@ -3,8 +3,6 @@ name: Build and Release
 on:
   push:
     branches: [ master ]
-    tags:
-      - "v*"
 
 jobs:
   release:
@@ -27,8 +25,19 @@ jobs:
       - name: Build
         run: ./gradlew clean build --stacktrace
 
+      - name: Resolve project version
+        id: project_version
+        run: |
+          VERSION=$(./gradlew -q properties | awk -F': ' '/^version:/ {print $2; exit}')
+          if [ -z "$VERSION" ]; then
+            echo "Unable to resolve project version" >&2
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.project_version.outputs.version }}
           files: jars/*.jar
           generate_release_notes: true
