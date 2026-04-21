@@ -17,7 +17,7 @@ val generateBuildConfig by tasks.registering {
         dir.file("BuildConfig.java").asFile.writeText(
             """package $pkg;
 
-/** Auto-generated build configuration — do not edit manually. */
+/** Auto-generated build configuration - do not edit manually. */
 public final class BuildConfig {
 
     public static final String VERSION = "$projectVersion";
