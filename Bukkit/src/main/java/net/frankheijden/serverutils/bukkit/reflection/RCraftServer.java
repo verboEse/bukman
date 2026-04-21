@@ -121,9 +121,6 @@ public class RCraftServer {
         if (MinecraftReflectionVersion.isMin(14))
             getReflection().set(Bukkit.getServer(), "minimumAPI", bukkit.getString("settings.minimum-api"));
         getReflection().set(Bukkit.getServer(), "printSaveWarning", false);
-        getReflection().set(Bukkit.getServer(), "monsterSpawn", bukkit.getInt("spawn-limits.monsters"));
-        getReflection().set(Bukkit.getServer(), "monsterSpawn", bukkit.getInt("spawn-limits.monsters"));
-        getReflection().set(Bukkit.getServer(), "monsterSpawn", bukkit.getInt("spawn-limits.monsters"));
         if (MinecraftReflectionVersion.isMax(12)) {
             getReflection().set(Bukkit.getServer(), "chunkGCPeriod", bukkit.getInt("chunk-gc.period-in-ticks"));
             getReflection().set(Bukkit.getServer(), "chunkGCLoadThresh", bukkit.getInt("chunk-gc.load-threshold"));
