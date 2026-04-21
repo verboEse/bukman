@@ -71,7 +71,7 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin, BungeePlu
 
     @Override
     public PluginResults<Plugin> loadPluginDescriptions(List<BungeePluginDescription> descriptions) {
-        PluginResults<Plugin> loadResults = new PluginResults<>();
+        final PluginResults<Plugin> loadResults = new PluginResults<>();
 
         PluginManager proxyPluginManager = proxy.getPluginManager();
         Map<String, PluginDescription> toLoad = RPluginManager.getToLoad(proxyPluginManager);
@@ -171,6 +171,7 @@ public class BungeePluginManager extends AbstractPluginManager<Plugin, BungeePlu
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public CloseablePluginResults<Plugin> unloadOrderedPlugins(List<Plugin> plugins) {
         CloseablePluginResults<Plugin> unloadResults = new CloseablePluginResults<>();
 

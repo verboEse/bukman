@@ -32,7 +32,7 @@ public class RVelocityCommandManager {
     /**
      * Proxies the registrars.
      */
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({"rawtypes", "removal"})
     public static void proxyRegistrars(
             ProxyServer proxy,
             ClassLoader loader,

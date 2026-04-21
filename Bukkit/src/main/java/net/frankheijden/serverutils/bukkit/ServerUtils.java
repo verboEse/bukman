@@ -51,6 +51,7 @@ public class ServerUtils extends JavaPlugin {
         plugin.disable();
     }
 
+    @SuppressWarnings("removal")
     public void restoreBukkitPluginCommand() {
         RCraftServer.getCommandMap().register("bukkit", new PluginsCommand("plugins"));
     }

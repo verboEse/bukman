@@ -1,6 +1,5 @@
 package net.frankheijden.serverutils.common.tasks;
 
-import com.sun.nio.file.SensitivityWatchEventModifier;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.ClosedWatchServiceException;
@@ -76,7 +75,7 @@ public class PluginWatcherTask<P, T> extends AbstractTask {
 
             AbstractPluginManager<P, ?> pluginManager = plugin.getPluginManager();
             Path basePath = pluginManager.getPluginsFolder().toPath();
-            basePath.register(watchService, EVENTS, SensitivityWatchEventModifier.HIGH);
+            basePath.register(watchService, EVENTS);
 
             while (run.get()) {
                 WatchKey key = watchService.take();

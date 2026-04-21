@@ -17,7 +17,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.zhdev.oblak:cloud-bungee:${VersionConstants.cloudVersion}")
+    implementation("cloud.commandframework:cloud-bungee:${VersionConstants.cloudVersion}")
     implementation("net.kyori:adventure-api:${VersionConstants.adventureVersion}") {
         exclude("net.kyori", "adventure-text-minimessage")
     }
@@ -30,7 +30,7 @@ dependencies {
     }
     implementation("org.bstats:bstats-bungeecord:${VersionConstants.bstatsVersion}")
     implementation(project(":Common"))
-    compileOnly("net.md-5:bungeecord-api:1.19-R0.1-SNAPSHOT")
+    compileOnly("net.md-5:bungeecord-api:26.1-R0.1-SNAPSHOT")
 }
 
 tasks.withType<ShadowJar> {

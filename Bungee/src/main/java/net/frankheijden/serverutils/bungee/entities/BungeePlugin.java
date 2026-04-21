@@ -42,7 +42,7 @@ public class BungeePlugin extends ServerUtilsPlugin<Plugin, ScheduledTask, Bunge
     protected BungeeCommandManager<BungeeAudience> newCommandManager() {
         return new BungeeCommandManager<>(
                 plugin,
-                AsynchronousCommandExecutionCoordinator.<BungeeAudience>newBuilder().build(),
+                AsynchronousCommandExecutionCoordinator.simpleCoordinator(),
                 chatProvider::get,
                 BungeeAudience::getSource
         );

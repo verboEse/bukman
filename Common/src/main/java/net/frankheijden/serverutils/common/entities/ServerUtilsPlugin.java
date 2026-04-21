@@ -74,6 +74,7 @@ public abstract class ServerUtilsPlugin<P, T, C extends ServerUtilsAudience<S>, 
 
     public abstract File getDataFolder();
 
+    @SuppressWarnings("deprecation")
     public Collection<Command<C>> getCommands() {
         return commandManager.getCommands();
     }

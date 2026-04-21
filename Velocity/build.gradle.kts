@@ -1,9 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
-plugins {
-    id("net.kyori.blossom") version "1.3.0"
-}
-
 group = "${rootProject.group}"
 val dependencyDir = "net.frankheijden.serverutils.velocity.dependencies"
 version = rootProject.version
@@ -17,7 +13,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.zhdev.oblak:cloud-velocity:${VersionConstants.cloudVersion}")
+    implementation("cloud.commandframework:cloud-velocity:${VersionConstants.cloudVersion}")
     implementation("org.bstats:bstats-velocity:${VersionConstants.bstatsVersion}")
     implementation(project(":Common"))
     implementation("net.kyori:adventure-text-minimessage:${VersionConstants.adventureMinimessageVersion}") {
@@ -27,12 +23,6 @@ dependencies {
     compileOnly("com.velocitypowered:velocity-brigadier:1.0.0-SNAPSHOT")
     compileOnly("com.electronwill.night-config:toml:3.6.3")
     annotationProcessor("com.velocitypowered:velocity-api:3.1.2-SNAPSHOT")
-}
-
-tasks {
-    blossom {
-        replaceToken("{version}", version, "src/main/java/net/frankheijden/serverutils/velocity/ServerUtils.java")
-    }
 }
 
 tasks.withType<ShadowJar> {

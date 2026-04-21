@@ -28,6 +28,7 @@ public class RPluginClassLoader {
         }
     }
 
+    @SuppressWarnings("removal")
     public static PluginLoader getLoader(ClassLoader loader) {
         if (loader == null) return null;
         return reflection.get(loader, "loader");
@@ -41,6 +42,7 @@ public class RPluginClassLoader {
     /**
      * Clears the plugin fields from the specified PluginClassLoader.
      */
+    @SuppressWarnings("removal")
     public static void clearPluginClassLoader(Object classLoader) {
         if (classLoader == null) return;
 
