@@ -14,10 +14,13 @@ import net.frankheijden.serverutils.bukkit.config.BukkitMessageKey;
 import net.frankheijden.serverutils.bukkit.listeners.BukkitPlayerListener;
 import net.frankheijden.serverutils.bukkit.managers.BukkitPluginManager;
 import net.frankheijden.serverutils.bukkit.managers.BukkitTaskManager;
+import net.frankheijden.serverutils.common.config.ServerUtilsConfig;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -127,6 +130,7 @@ public class BukkitPlugin extends ServerUtilsPlugin<Plugin, BukkitTask, BukkitAu
     @Override
     protected void reloadPlugin() {
         this.messagesResource.load(Arrays.asList(BukkitMessageKey.values()));
+        registerConfiguredPermissions((ServerUtilsConfig) getCommandsResource().getConfig().get("commands"));
         if (!MinecraftReflectionVersion.isSupported()) {
             getLogger().warning(
                     "Skipping reflection-based plugin command rewiring because server version is unsupported."
@@ -147,5 +151,25 @@ public class BukkitPlugin extends ServerUtilsPlugin<Plugin, BukkitTask, BukkitAu
         new BukkitCommandServerUtils(this).register(commandManager);
 
         taskManager.runTask(() -> BukkitPluginManager.unregisterExactCommands(plugin.getDisabledCommands()));
+    }
+
+    private void registerConfiguredPermissions(ServerUtilsConfig config) {
+        if (config == null) {
+            return;
+        }
+
+        String permission = config.getString("permission");
+        if (permission != null
+            && !permission.isEmpty()
+            && Bukkit.getPluginManager().getPermission(permission) == null) {
+            Bukkit.getPluginManager().addPermission(new Permission(permission, PermissionDefault.OP));
+        }
+
+        for (String key : config.getKeys()) {
+            Object value = config.get(key);
+            if (value instanceof ServerUtilsConfig) {
+                registerConfiguredPermissions((ServerUtilsConfig) value);
+            }
+        }
     }
 }
