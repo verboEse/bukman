@@ -34,4 +34,12 @@ public class ReflectionUtils {
             th.printStackTrace();
         }
     }
+
+    /**
+     * Backward-compatible alias for older call sites.
+     */
+    @SuppressWarnings("removal")
+    public static void doPrivilegedWithUnsafe(Consumer<Unsafe> action) {
+        doWithUnsafe(action);
+    }
 }
