@@ -4,5 +4,6 @@
 .vscode/
 build/
 jars/
+.testserver/
 *.class
 *.jar

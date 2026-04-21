@@ -6,7 +6,8 @@
     "download-updates-boot": false,
     "download-updates-login": false,
     "install-updates-boot": false,
-    "install-updates-login": false
+    "install-updates-login": false,
+    "debug-commands": false
   },
   "unload-after-startup": {
     "delay-ticks": 20,

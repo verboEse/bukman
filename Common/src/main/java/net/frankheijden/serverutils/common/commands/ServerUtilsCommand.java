@@ -37,15 +37,15 @@ public abstract class ServerUtilsCommand<U extends ServerUtilsPlugin<?, ?, C, ?,
      * Registers commands with the given CommandManager.
      */
     public final void register(CommandManager<C> manager) {
-        register(
-                manager,
-                manager.commandBuilder(
-                    applyPrefix(commandConfig.getString("main")),
-                    commandConfig.getStringList("aliases").stream()
-                            .map(this::applyPrefix)
-                            .toArray(String[]::new)
-                ).permission(commandConfig.getString("permission"))
-        );
+        debugCommand("Registering root command '" + commandName + "'.");
+        Command.Builder<C> rootBuilder = manager.commandBuilder(
+            applyPrefix(commandConfig.getString("main")),
+            commandConfig.getStringList("aliases").stream()
+                .map(this::applyPrefix)
+                .toArray(String[]::new)
+        ).permission(commandConfig.getString("permission"));
+        register(manager, rootBuilder);
+        debugCommand("Finished registering root command '" + commandName + "'.");
     }
 
     protected abstract void register(CommandManager<C> manager, Command.Builder<C> builder);
@@ -80,8 +80,22 @@ public abstract class ServerUtilsCommand<U extends ServerUtilsPlugin<?, ?, C, ?,
                 subcommandBuilder = subcommandBuilder.flag(createFlag(flagElement));
             }
 
+            debugCommand(
+                    "Registering subcommand alias '" + cmd + "' for '" + commandName + " " + subcommandName + "'."
+            );
             return builderUnaryOperator.apply(subcommandBuilder).build();
         }).forEach(manager::command);
+    }
+
+    protected boolean isCommandDebugEnabled() {
+        return plugin.getConfigResource() != null
+                && plugin.getConfigResource().getConfig().getBoolean("settings.debug-commands");
+    }
+
+    protected void debugCommand(String message) {
+        if (isCommandDebugEnabled()) {
+            plugin.getLogger().info("[CommandDebug] " + message);
+        }
     }
 
     /**

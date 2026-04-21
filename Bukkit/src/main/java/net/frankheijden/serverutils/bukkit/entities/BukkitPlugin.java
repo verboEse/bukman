@@ -16,7 +16,6 @@ import net.frankheijden.serverutils.bukkit.managers.BukkitPluginManager;
 import net.frankheijden.serverutils.bukkit.managers.BukkitTaskManager;
 import net.frankheijden.serverutils.common.config.ServerUtilsConfig;
 import net.frankheijden.serverutils.common.entities.ServerUtilsPlugin;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.permissions.Permission;
@@ -30,7 +29,6 @@ public class BukkitPlugin extends ServerUtilsPlugin<Plugin, BukkitTask, BukkitAu
     private final BukkitPluginManager pluginManager;
     private final BukkitTaskManager taskManager;
     private final BukkitResourceProvider resourceProvider;
-    private final BukkitAudiences audiences;
     private final BukkitAudienceProvider chatProvider;
     private boolean registeredPluginsCommand;
 
@@ -43,13 +41,15 @@ public class BukkitPlugin extends ServerUtilsPlugin<Plugin, BukkitTask, BukkitAu
         this.pluginManager = new BukkitPluginManager();
         this.taskManager = new BukkitTaskManager();
         this.resourceProvider = new BukkitResourceProvider(plugin);
-        this.audiences = BukkitAudiences.create(plugin);
-        this.chatProvider = new BukkitAudienceProvider(plugin, this.audiences);
+        this.chatProvider = new BukkitAudienceProvider(plugin);
         this.registeredPluginsCommand = false;
     }
 
     @Override
     protected PaperCommandManager<BukkitAudience> newCommandManager() {
+        if (getConfigResource() != null && getConfigResource().getConfig().getBoolean("settings.debug-commands")) {
+            getLogger().info("[CommandDebug] Creating PaperCommandManager.");
+        }
         PaperCommandManager<BukkitAudience> commandManager;
         try {
             commandManager = new PaperCommandManager<>(
@@ -65,13 +65,24 @@ public class BukkitPlugin extends ServerUtilsPlugin<Plugin, BukkitTask, BukkitAu
         boolean hasBrigadier = commandManager.hasCapability(CloudBukkitCapabilities.BRIGADIER);
         boolean hasNativeBrigadier = commandManager.hasCapability(CloudBukkitCapabilities.NATIVE_BRIGADIER);
         boolean hasCommodoreBrigadier = commandManager.hasCapability(CloudBukkitCapabilities.COMMODORE_BRIGADIER);
+        if (getConfigResource() != null && getConfigResource().getConfig().getBoolean("settings.debug-commands")) {
+            getLogger().info("[CommandDebug] Capabilities: brigadier=" + hasBrigadier
+                    + ", nativeBrigadier=" + hasNativeBrigadier
+                    + ", commodoreBrigadier=" + hasCommodoreBrigadier + ".");
+        }
         if (hasBrigadier && (hasNativeBrigadier || hasCommodoreBrigadier)) {
             commandManager.registerBrigadier();
             handleBrigadier(commandManager.brigadierManager());
+            if (getConfigResource() != null && getConfigResource().getConfig().getBoolean("settings.debug-commands")) {
+                getLogger().info("[CommandDebug] Brigadier bridge registered.");
+            }
         }
 
         if (commandManager.hasCapability(CloudBukkitCapabilities.ASYNCHRONOUS_COMPLETION)) {
             commandManager.registerAsynchronousCompletions();
+            if (getConfigResource() != null && getConfigResource().getConfig().getBoolean("settings.debug-commands")) {
+                getLogger().info("[CommandDebug] Asynchronous completions registered.");
+            }
         }
 
         return commandManager;
@@ -124,11 +135,15 @@ public class BukkitPlugin extends ServerUtilsPlugin<Plugin, BukkitTask, BukkitAu
 
     @Override
     protected void disablePlugin() {
-        this.audiences.close();
+        // nothing to close
     }
 
     @Override
     protected void reloadPlugin() {
+        boolean commandDebugEnabled = getConfigResource().getConfig().getBoolean("settings.debug-commands");
+        if (commandDebugEnabled) {
+            getLogger().info("[CommandDebug] reloadPlugin started.");
+        }
         this.messagesResource.load(Arrays.asList(BukkitMessageKey.values()));
         registerConfiguredPermissions((ServerUtilsConfig) getCommandsResource().getConfig().get("commands"));
         if (!MinecraftReflectionVersion.isSupported()) {
@@ -146,11 +161,21 @@ public class BukkitPlugin extends ServerUtilsPlugin<Plugin, BukkitTask, BukkitAu
                 BukkitPluginManager.unregisterCommands("pl", "plugins");
                 new BukkitCommandPlugins(this).register(commandManager);
                 this.registeredPluginsCommand = true;
+                if (commandDebugEnabled) {
+                    getLogger().info("[CommandDebug] Registered Bukkit plugins command override.");
+                }
             }
         }
         new BukkitCommandServerUtils(this).register(commandManager);
+        if (commandDebugEnabled) {
+            getLogger().info("[CommandDebug] Registered ServerUtils command tree.");
+        }
 
         taskManager.runTask(() -> BukkitPluginManager.unregisterExactCommands(plugin.getDisabledCommands()));
+        if (commandDebugEnabled) {
+            getLogger().info("[CommandDebug] Scheduled disabled command cleanup task.");
+            getLogger().info("[CommandDebug] reloadPlugin completed.");
+        }
     }
 
     private void registerConfiguredPermissions(ServerUtilsConfig config) {

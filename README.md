@@ -18,6 +18,25 @@ There are two ways to compile Bukman:
 <br>
 **Linux/macOS**: `./gradlew build`
 
+## Local testing on latest Purpur experimental
+
+1. Prepare a local test server (downloads latest Purpur experimental for 26.1.2 and installs Bukman):
+  - `./scripts/purpur-experimental-setup.sh`
+2. Start the server:
+  - `./scripts/purpur-experimental-run.sh`
+
+By default, the test server is created at `.testserver/purpur-experimental`.
+You can override this location with `BUKMAN_TEST_SERVER_DIR=/path/to/server`.
+
+The setup script enables command tracing automatically in `plugins/Bukman/config.yml`:
+
+```yml
+settings:
+  debug-commands: true
+```
+
+When enabled, Bukman writes command flow markers to the server log prefixed with `[CommandDebug]`.
+
 #### Gradle:
 ```kotlin
 repositories { 
