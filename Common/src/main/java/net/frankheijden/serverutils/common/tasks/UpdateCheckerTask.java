@@ -35,7 +35,7 @@ public class UpdateCheckerTask<U extends ServerUtilsPlugin<P, ?, ?, ?, ?>, P> im
     private final boolean download;
     private final boolean install;
 
-    private static final String GITHUB_LINK = "https://api.github.com/repos/rozhur/bukman/releases/latest";
+    private static final String GITHUB_LINK = "https://api.github.com/repos/verboEse/bukman/releases/latest";
     private static final String GITHUB_UPDATER_LINK = "https://api.github.com/repos/FrankHeijden/ServerUtilsUpdater"
             + "/releases/latest";
 
