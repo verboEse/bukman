@@ -96,10 +96,12 @@ subprojects {
         relocate("cloud.commandframework", "${dependencyDir}.cloud")
         relocate("me.lucko.commodore", "${dependencyDir}.commodore")
         relocate("io.leangen.geantyref", "${dependencyDir}.typetoken")
-        if (project.name != "Velocity") {
+        if (project.name != "Velocity" && project.name != "Bukkit") {
             relocate("net.kyori", "${dependencyDir}.kyori")
         }
-        relocate("net.kyori.adventure.text.minimessage", "${dependencyDir}.adventure.text.minimessage")
+        if (project.name != "Velocity" && project.name != "Bukkit") {
+            relocate("net.kyori.adventure.text.minimessage", "${dependencyDir}.adventure.text.minimessage")
+        }
         relocate("dev.frankheijden.minecraftreflection", "${dependencyDir}.minecraftreflection")
         relocate("org.zhdev", "${dependencyDir}.zhdev")
     }

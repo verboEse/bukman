@@ -62,6 +62,7 @@ public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, P
             CommandManager<BukkitAudience> manager,
             cloud.commandframework.Command.Builder<BukkitAudience> builder
     ) {
+        debugCommand("Registering Bukkit-specific subcommands for '" + commandName + "'.");
         super.register(manager, builder);
 
         final List<String> supportedConfigNames = supportedConfigs.entrySet().stream()
@@ -92,39 +93,48 @@ public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, P
         registerSubcommand(manager, builder, "reloadconfig", subcommandBuilder -> subcommandBuilder
                 .argument(getArgument("config"))
                 .handler(this::handleReloadConfig));
+        debugCommand("Finished registering Bukkit-specific subcommands for '" + commandName + "'.");
     }
 
     private void handleEnablePlugin(CommandContext<BukkitAudience> context) {
+        debugCommand("handleEnablePlugin started. raw='" + context.getRawInputJoined() + "'.");
         BukkitAudience sender = context.getSender();
         List<Plugin> plugins = Arrays.asList(context.get("plugins"));
 
         PluginResults<Plugin> enableResults = plugin.getPluginManager().enablePlugins(plugins);
         enableResults.sendTo(sender, BukkitMessageKey.ENABLEPLUGIN);
+        debugCommand("handleEnablePlugin completed for " + plugins.size() + " plugin(s).");
     }
 
     private void handleDisablePlugin(CommandContext<BukkitAudience> context) {
+        debugCommand("handleDisablePlugin started. raw='" + context.getRawInputJoined() + "'.");
         BukkitAudience sender = context.getSender();
         List<Plugin> plugins = Arrays.asList(context.get("plugins"));
 
         if (checkProtectedPlugins(sender, plugins)) {
+            debugCommand("handleDisablePlugin stopped: protected plugin in selection.");
             return;
         }
 
         if (checkDependingPlugins(context, sender, plugins, "disableplugin")) {
+            debugCommand("handleDisablePlugin stopped: depending plugins blocked disable.");
             return;
         }
 
         PluginResults<Plugin> disableResults = plugin.getPluginManager().disablePlugins(plugins);
         disableResults.sendTo(sender, BukkitMessageKey.DISABLEPLUGIN);
+        debugCommand("handleDisablePlugin completed for " + plugins.size() + " plugin(s).");
     }
 
     private void handleReloadConfig(CommandContext<BukkitAudience> context) {
+        debugCommand("handleReloadConfig started. raw='" + context.getRawInputJoined() + "'.");
         BukkitAudience sender = context.getSender();
         String config = context.get("config");
 
         MessagesResource messages = plugin.getMessagesResource();
         ReloadHandler handler = supportedConfigs.get(config);
         if (handler == null) {
+            debugCommand("handleReloadConfig stopped: unknown config '" + config + "'.");
             messages.get(BukkitMessageKey.RELOADCONFIG_NOT_EXISTS).sendTo(
                     sender,
                     TagResolver.resolver("config", Tag.inserting(Component.text(config)))
@@ -137,6 +147,7 @@ public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, P
             int max = versionReloadHandler.getMinecraftVersionMaximum();
 
             if (MinecraftReflectionVersion.MINOR > max) {
+                debugCommand("handleReloadConfig stopped: config '" + config + "' not supported for current version.");
                 messages.get(BukkitMessageKey.RELOADCONFIG_NOT_SUPPORTED).sendTo(
                         sender,
                         TagResolver.resolver("config", Tag.inserting(Component.text(config)))
@@ -156,9 +167,11 @@ public class BukkitCommandServerUtils extends CommandServerUtils<BukkitPlugin, P
                     : BukkitMessageKey.RELOADCONFIG_SUCCESS;
             plugin.getMessagesResource().get(key).sendTo(sender, TagResolver.resolver("config",
                     Tag.inserting(Component.text(config))));
+            debugCommand("handleReloadConfig completed for config '" + config + "'. warnings=" + filter.hasWarnings());
         } catch (Exception ex) {
             filter.stop(Bukkit.getLogger());
 
+            debugCommand("handleReloadConfig failed with exception for config '" + config + "'.");
             ex.printStackTrace();
             plugin.getMessagesResource().get(MessageKey.GENERIC_ERROR).sendTo(sender);
         }

@@ -29,10 +29,6 @@ dependencies {
     compileOnly("net.kyori:adventure-api:${VersionConstants.adventureVersion}") {
         exclude("net.kyori", "adventure-text-minimessage")
     }
-    compileOnly("net.kyori:adventure-platform-bukkit:${VersionConstants.adventurePlatformVersion}") {
-        exclude("net.kyori", "adventure-api")
-        exclude("net.kyori", "adventure-text-minimessage")
-    }
     compileOnly("net.kyori:adventure-text-minimessage:${VersionConstants.adventureMinimessageVersion}") {
         exclude("net.kyori", "adventure-api")
     }

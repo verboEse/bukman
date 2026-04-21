@@ -51,6 +51,7 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
 
     @Override
     public void register(CommandManager<C> manager, Command.Builder<C> builder) {
+        debugCommand("Preparing arguments and subcommands for '" + commandName + "'.");
         addArgument(new JarFilesArgument<>(true, "jarFiles", plugin));
         addArgument(new PluginsArgument<>(true, "plugins", new PluginsArgument.PluginsParser<>(plugin, arrayCreator)));
         addArgument(new PluginArgument<>(true, "plugin", plugin));
@@ -100,9 +101,11 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
         registerSubcommand(manager, builder, "commandinfo", subcommandBuilder -> subcommandBuilder
                 .argument(getArgument("command"))
                 .handler(this::handleCommandInfo));
+        debugCommand("Finished wiring handlers for '" + commandName + "'.");
     }
 
     private void handleHelpCommand(CommandContext<C> context) {
+        debugCommand("handleHelpCommand started. raw='" + context.getRawInputJoined() + "'.");
         C sender = context.getSender();
 
         MessagesResource messages = plugin.getMessagesResource();
@@ -168,6 +171,7 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
         }
 
         sender.sendMessage(messages.get(MessageKey.HELP_FOOTER).toComponent());
+        debugCommand("handleHelpCommand completed.");
     }
 
     private String determineShortestAlias(CommandElement element) {
@@ -181,28 +185,36 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
     }
 
     private void handleReload(CommandContext<C> context) {
+        debugCommand("handleReload started. raw='" + context.getRawInputJoined() + "'.");
         C sender = context.getSender();
         plugin.reload();
         plugin.getMessagesResource().get(MessageKey.RELOAD).sendTo(sender);
+        debugCommand("handleReload completed.");
     }
 
     private void handleRestart(CommandContext<C> context) {
+        debugCommand("handleRestart started. raw='" + context.getRawInputJoined() + "'.");
         C sender = context.getSender();
 
         if (checkDependingPlugins(context, sender, Collections.singletonList(plugin.getPlugin()), "restart")) {
+            debugCommand("handleRestart stopped: depending plugins blocked restart.");
             return;
         }
 
         UpdateCheckerTask.restart(sender);
+        debugCommand("handleRestart handed off to UpdateCheckerTask.restart.");
     }
 
     private void handleLoadPlugin(CommandContext<C> context) {
+        debugCommand("handleLoadPlugin started. raw='" + context.getRawInputJoined() + "'.");
         C sender = context.getSender();
         List<File> jarFiles = Arrays.asList(context.get("jarFiles"));
+        debugCommand("handleLoadPlugin loading " + jarFiles.size() + " jar file(s).");
 
         AbstractPluginManager<P, ?> pluginManager = plugin.getPluginManager();
         PluginResults<P> loadResults = pluginManager.loadPlugins(jarFiles);
         if (!loadResults.isSuccess()) {
+            debugCommand("handleLoadPlugin failed during loadPlugins.");
             PluginResult<P> failedResult = loadResults.last();
             failedResult.sendTo(sender, null);
             return;
@@ -210,13 +222,16 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
 
         PluginResults<P> enableResults = pluginManager.enablePlugins(loadResults.getPlugins());
         enableResults.sendTo(sender, MessageKey.LOADPLUGIN);
+        debugCommand("handleLoadPlugin completed.");
     }
 
     private void handleUnloadPlugin(CommandContext<C> context) {
+        debugCommand("handleUnloadPlugin started. raw='" + context.getRawInputJoined() + "'.");
         C sender = context.getSender();
         List<P> plugins = new ArrayList<>(Arrays.asList(context.get("plugins")));
 
         if (checkProtectedPlugins(sender, plugins)) {
+            debugCommand("handleUnloadPlugin stopped: protected plugin in selection.");
             return;
         }
 
@@ -224,7 +239,10 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
 
         Collection<P> dependingPlugins = getDependingPlugins(context, sender, plugins, "unloadplugin");
         if (!recursive) {
-            if (!dependingPlugins.isEmpty()) return;
+            if (!dependingPlugins.isEmpty()) {
+                debugCommand("handleUnloadPlugin stopped: depending plugins found without recursive flag.");
+                return;
+            }
         } else {
             plugins.addAll(0, dependingPlugins);
         }
@@ -232,6 +250,7 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
         PluginResults<P> disableResults = plugin.getPluginManager().disablePlugins(plugins);
         for (PluginResult<P> disableResult : disableResults.getResults()) {
             if (!disableResult.isSuccess() && disableResult.getResult() != Result.ALREADY_DISABLED) {
+                debugCommand("handleUnloadPlugin failed while disabling plugins.");
                 disableResult.sendTo(sender, null);
                 return;
             }
@@ -240,13 +259,16 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
         CloseablePluginResults<P> unloadResults = plugin.getPluginManager().unloadPlugins(plugins);
         unloadResults.tryClose();
         unloadResults.sendTo(sender, MessageKey.UNLOADPLUGIN);
+        debugCommand("handleUnloadPlugin completed.");
     }
 
     private void handleReloadPlugin(CommandContext<C> context) {
+        debugCommand("handleReloadPlugin started. raw='" + context.getRawInputJoined() + "'.");
         C sender = context.getSender();
         List<P> plugins = Arrays.asList(context.get("plugins"));
 
         if (checkProtectedPlugins(sender, plugins)) {
+            debugCommand("handleReloadPlugin stopped: protected plugin in selection.");
             return;
         }
 
@@ -254,10 +276,12 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
 
         Collection<P> dependingPlugins = getDependingPlugins(context, sender, plugins, "reloadplugin");
         if (!recursive && !dependingPlugins.isEmpty()) {
+            debugCommand("handleReloadPlugin stopped: depending plugins found without recursive flag.");
             return;
         }
 
         if (checkServerUtils(context, sender, plugins)) {
+            debugCommand("handleReloadPlugin stopped: target includes ServerUtils plugin.");
             return;
         }
 
@@ -265,6 +289,7 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
             PluginResults<P> disableDependingResults = plugin.getPluginManager().disablePlugins(dependingPlugins);
             for (PluginResult<P> disableResult : disableDependingResults.getResults()) {
                 if (!disableResult.isSuccess() && disableResult.getResult() != Result.ALREADY_DISABLED) {
+                    debugCommand("handleReloadPlugin failed while disabling depending plugins.");
                     disableResult.sendTo(sender, null);
                     return;
                 }
@@ -296,6 +321,7 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
 
             PluginResults<P> loadDependingResults = plugin.getPluginManager().loadPlugins(pluginFiles);
             if (!loadDependingResults.isSuccess()) {
+                debugCommand("handleReloadPlugin failed while loading depending plugins.");
                 PluginResult<P> failedResult = loadDependingResults.last();
                 failedResult.sendTo(sender, null);
             }
@@ -303,6 +329,7 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
             PluginResults<P> enableResults = plugin.getPluginManager().enablePlugins(loadDependingResults.getPlugins());
             enableResults.sendTo(sender, MessageKey.LOADPLUGIN_RECURSIVELY);
         }
+        debugCommand("handleReloadPlugin completed.");
     }
 
     protected boolean checkDependingPlugins(CommandContext<C> context, C sender, List<P> plugins, String subcommand) {
@@ -311,7 +338,10 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
 
     protected Collection<P> getDependingPlugins(CommandContext<C> context, C sender, List<P> plugins,
             String subcommand) {
-        if (context.flags().contains("force")) return Collections.emptySet();
+        if (context.flags().contains("force")) {
+            debugCommand("getDependingPlugins bypassed by force flag for subcommand '" + subcommand + "'.");
+            return Collections.emptySet();
+        }
 
         boolean recursive = context.flags().contains("recursive");
 
@@ -368,12 +398,20 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
             ));
         }
 
+        if (!dependingPluginsAll.isEmpty()) {
+            String debugMessage = "getDependingPlugins found " + dependingPluginsAll.size()
+                    + " dependent plugin(s) for subcommand '" + subcommand + "'.";
+            debugCommand(debugMessage);
+        }
         return dependingPluginsAll.values();
     }
 
     protected boolean checkServerUtils(CommandContext<C> context, C sender, List<P> plugins) {
         for (P loadedPlugin : plugins) {
             if (plugin.getPlugin() == loadedPlugin) {
+                String debugMessage = "checkServerUtils matched self plugin for raw input '"
+                        + context.getRawInputJoined() + "'.";
+                debugCommand(debugMessage);
                 String restartCommand = plugin.getCommandsResource().getAllAliases(getRawPath("restart")).stream()
                         .min(Comparator.comparingInt(String::length))
                         .orElse("restart");
@@ -397,6 +435,7 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
         for (P plugin : plugins) {
             String pluginId = pluginManager.getPluginId(plugin);
             if (protectedPlugins.contains(pluginId)) {
+                debugCommand("checkProtectedPlugins blocked plugin '" + pluginId + "'.");
                 sender.sendMessage(messagesResource.get(MessageKey.GENERIC_PROTECTED_PLUGIN).toComponent(
                         TagResolver.resolver("plugin", Tag.inserting(Component.text(pluginId)))
                 ));
@@ -407,35 +446,43 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
     }
 
     private void handleWatchPlugin(CommandContext<C> context) {
+        debugCommand("handleWatchPlugin started. raw='" + context.getRawInputJoined() + "'.");
         C sender = context.getSender();
         List<P> plugins = Arrays.asList(context.get("plugins"));
 
         if (checkDependingPlugins(context, sender, plugins, "watchplugin")) {
+            debugCommand("handleWatchPlugin stopped: depending plugins blocked watch.");
             return;
         }
 
         if (checkServerUtils(context, sender, plugins)) {
+            debugCommand("handleWatchPlugin stopped: target includes ServerUtils plugin.");
             return;
         }
 
         PluginWatchResults watchResults = plugin.getWatchManager().watchPlugins(sender, plugins);
         watchResults.sendTo(sender);
+        debugCommand("handleWatchPlugin completed.");
     }
 
     private void handleUnwatchPlugin(CommandContext<C> context) {
+        debugCommand("handleUnwatchPlugin started. raw='" + context.getRawInputJoined() + "'.");
         C sender = context.getSender();
         P pluginArg = context.get("plugin");
 
         String pluginId = plugin.getPluginManager().getPluginId(pluginArg);
         PluginWatchResults watchResults = plugin.getWatchManager().unwatchPluginsAssociatedWith(pluginId);
         watchResults.sendTo(sender);
+        debugCommand("handleUnwatchPlugin completed for plugin '" + pluginId + "'.");
     }
 
     private void handlePluginInfo(CommandContext<C> context) {
+        debugCommand("handlePluginInfo started. raw='" + context.getRawInputJoined() + "'.");
         C sender = context.getSender();
         P pluginArg = context.get("plugin");
 
         createInfo(sender, "plugininfo", pluginArg, this::createPluginInfo);
+        debugCommand("handlePluginInfo completed.");
     }
 
     protected abstract KeyValueComponentBuilder createPluginInfo(
@@ -445,15 +492,18 @@ public abstract class CommandServerUtils<U extends ServerUtilsPlugin<P, ?, C, ?,
     );
 
     private void handleCommandInfo(CommandContext<C> context) {
+        debugCommand("handleCommandInfo started. raw='" + context.getRawInputJoined() + "'.");
         C sender = context.getSender();
         String commandName = context.get("command");
 
         if (!plugin.getPluginManager().getCommands().contains(commandName)) {
+            debugCommand("handleCommandInfo stopped: command not found -> '" + commandName + "'.");
             plugin.getMessagesResource().get(MessageKey.COMMANDINFO_NOT_EXISTS).sendTo(sender);
             return;
         }
 
         createInfo(sender, "commandinfo", commandName, this::createCommandInfo);
+        debugCommand("handleCommandInfo completed for command '" + commandName + "'.");
     }
 
     protected abstract KeyValueComponentBuilder createCommandInfo(
