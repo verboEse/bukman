@@ -10,12 +10,14 @@ base {
 val generateBuildConfig by tasks.registering {
     val outputDir = layout.buildDirectory.dir("generated/sources/buildConfig/main/java")
     val projectVersion = rootProject.version.toString()
-    outputs.dir(outputDir)
+    val pkg = "net.frankheijden.serverutils.velocity"
+    val buildConfigFile = outputDir.map { it.file(pkg.replace('.', '/') + "/BuildConfig.java") }
+    inputs.property("version", projectVersion)
+    outputs.file(buildConfigFile)
     doLast {
-        val pkg = "net.frankheijden.serverutils.velocity"
-        val dir = outputDir.get().dir(pkg.replace('.', '/'))
-        dir.asFile.mkdirs()
-        dir.file("BuildConfig.java").asFile.writeText(
+        val file = buildConfigFile.get().asFile
+        file.parentFile.mkdirs()
+        file.writeText(
             """package $pkg;
 
 /** Auto-generated build configuration - do not edit manually. */

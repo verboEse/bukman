@@ -25,7 +25,7 @@ jobs:
         run: chmod +x gradlew
       - name: Build
         run: ./gradlew clean build --stacktrace
-      - name: Upload artififacts
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Bukman
