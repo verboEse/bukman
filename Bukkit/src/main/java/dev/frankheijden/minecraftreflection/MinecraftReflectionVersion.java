@@ -73,9 +73,9 @@ public class MinecraftReflectionVersion {
         NMS = extractNmsToken(packageName);
 
         if (!SUPPORTED) {
-            Bukkit.getLogger().warning("[Bukman] Unable to resolve supported Minecraft server version. "
+            Bukkit.getLogger().warning("[Bukman] Unable to resolve Minecraft server version metadata. "
                     + "Reflection-dependent features will be disabled. "
-                    + "source=" + DETECTION_SOURCE + ", package='" + packageName + "', "
+                    + "reason='" + resolved.message + "', source=" + DETECTION_SOURCE + ", package='" + packageName + "', "
                     + "minecraftVersion='" + minecraftVersion + "', bukkitVersion='" + bukkitVersion + "', "
                     + "serverVersion='" + serverVersion + "'.");
         }
